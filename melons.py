@@ -1,8 +1,16 @@
 """Classes for melon orders."""
 import random
-import datetime
+from datetime import datetime
 
-class AbstractMelonOrder:
+class TooManyMelonsError(ValueError):
+    pass
+    # def __repr__(self):
+    #     return f'{self}: No more than 100 melons!'
+    # if self.qty >100:
+    #     raise TooManyMelonsError
+    
+
+class AbstractMelonOrder(TooManyMelonsError):
     """A melon order within the USA."""
 
     order_type = None
@@ -15,17 +23,20 @@ class AbstractMelonOrder:
         self.qty = qty
         self.shipped = False
 
+        if self.qty >100:
+            raise TooManyMelonsError("Too Many Melons") 
+    
     def get_base_price(self):
         base_price = random.randint(5,9)
         print(base_price)
         rush_hour_fee = 4
 
-        now = datetime.datetime.now()
-        current_hour = now.hour
-
-        # if datetime.datetime.today().weekday() in [0,4] and 8 < current_hour < 11:
-        if datetime.datetime.today().weekday() == 5:
-            base_price += rush_hour_fee
+        # now = datetime.now()
+        
+        # if -2 < datetime.today().weekday() < 4
+        if (datetime.today().weekday() in range(0,5)
+            and datetime.now().hour < 11):
+                base_price += rush_hour_fee
         
         return base_price
 
@@ -34,15 +45,18 @@ class AbstractMelonOrder:
         """Calculate price, including tax."""
         
         base_price = self.get_base_price()
-        flat_int_fee = 3
+        
 
         if self.species == "Christmas":
             base_price = base_price * 1.5
 
         total = ((1 + self.tax) * self.qty * base_price) 
 
-        if self.order_type == "international" and self.qty <10:
-            total += flat_int_fee
+        # potentially move to the international class and super the super() method to improve the 
+        # get_total method
+        
+        # if self.order_type == "international" and self.qty <10:
+        #     total += flat_int_fee
 
         return total
 
@@ -72,6 +86,16 @@ class InternationalMelonOrder(AbstractMelonOrder):
         """Return the country code."""
 
         return self.country_code
+    
+    def get_total(self):
+        total = super().get_total()
+        flat_int_fee = 3
+
+        if self.qty < 10:
+            total += flat_int_fee
+        
+        return total
+
 
 
 
@@ -86,7 +110,11 @@ class GovernmentMelonOrder(AbstractMelonOrder):
     def mark_inspection(self, passed):
         """Record the fact than an order has passed inspection."""
         self.passed_inspection = passed
-        
+
+
+    #if type(is_close_enough(div_result, guess)) is not bool:
+            # raise ValueError(f"is_close_enough did not return a boolean.")
+
 # MelonObject.mark_inspection(True)
 # passed=True
 # MelonObject.mark_inspection
